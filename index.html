@@ -1,0 +1,50 @@
+<html>
+<head>
+<title>Correspondence JS</title>
+</head>
+<body>
+<script type="text/javascript" src="knockout-2.0.0.js">
+</script>
+<script type="text/javascript" src="correspondence.js">
+</script>
+<script type="text/javascript" src="model.js">
+</script>
+<button data-bind="click: NewList">New List</button>
+<ul data-bind="foreach: lists">
+<li data-bind="text: name">
+</li>
+</ul>
+<script type="text/javascript">
+    var domain = new Domain();
+    var me = new Identity("me");
+
+    var list = new List(newGuid());
+    new List__name(domain, list, [], "Existing List");
+    new IdentityListShare(domain, me, list);
+
+    function ListViewModel(share) {
+        this.share = share;
+
+        this.name = ko.computed(function () {
+            return ucc.firstOrDefault(share.list.nameCandidates(), function (candidate) { return candidate.value; });
+        });
+    }
+
+    function IdentityViewModel(identity) {
+        this.lists = ko.computed(function () {
+            return ucc.select(identity.activeShares(), function (share) {
+                return new ListViewModel(share);
+            });
+        });
+
+        this.NewList = function () {
+            var list = new List(newGuid());
+            new List__name(domain, list, [], "New List");
+            new IdentityListShare(domain, identity, list);
+        }
+    }
+
+    ko.applyBindings(new IdentityViewModel(me));
+</script>
+</body>
+</html>
